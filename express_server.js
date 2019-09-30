@@ -18,7 +18,8 @@ const generateRandomString = function() {
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "9sm5xK": "http://www.google.com",
+  "abcdef": "http://www.rotoworld.com"
 };
 
 app.get("/", (req, res) => {
@@ -44,14 +45,20 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  const generatedshortURL = generateRandomString();
+  urlDatabase[generatedshortURL] = req.body.longURL;
+  res.redirect(`/urls/${generatedshortURL}`);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show.ejs", templateVars);
 });
+
+app.get("/u/:shortURL", function(req, res) {
+  let shortURL = req.params.shortURL;
+  res.redirect(urlDatabase[shortURL]);
+})
 
 
 app.listen(PORT, () => {
