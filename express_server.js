@@ -22,10 +22,10 @@ app.get("/hello", (req, res) => {
   res.render("hello_world", templateVars);
 });
 
-app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+app.get("/urls", function(req, res) {
+  let templateVars = {urls: urlDatabase};
   res.render("urls_index", templateVars);
-});
+})
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
