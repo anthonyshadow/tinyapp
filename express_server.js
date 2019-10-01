@@ -50,15 +50,22 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${generatedshortURL}`);
 });
 
-app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
-  res.render("urls_show.ejs", templateVars);
-});
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
+})
 
 app.get("/u/:shortURL", function(req, res) {
   let shortURL = req.params.shortURL;
   res.redirect(urlDatabase[shortURL]);
 })
+
+
+app.get("/urls/:shortURL", (req, res) => {
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  res.render("urls_show.ejs", templateVars);
+});
+
 
 
 app.listen(PORT, () => {
