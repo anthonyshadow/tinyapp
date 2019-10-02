@@ -3,6 +3,8 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser')
+const bcrypt = require('bcrypt');
+
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -36,10 +38,20 @@ function verifyPassword(email, password) {
   }
 }; 
 
+function userVerification(object, id) {
+  let returned = {};
+  for (let obj in object) {
+    if (object[obj].userID == id) {
+      returned[obj] = object[obj];
+    }
+  }
+  return returned;
+};
+
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
 };
 
 const users = { 
@@ -72,7 +84,7 @@ app.get("/hello", (req, res) => {
 app.get("/urls", function(req, res) {
   let cookie = req.cookies;
   let templateVars = {
-    urls: urlDatabase, 
+    urls: userVerification(urlDatabase, cookie.user_id), 
     user: users[cookie.user_id]
   };
   res.render("urls_index", templateVars);
@@ -80,18 +92,17 @@ app.get("/urls", function(req, res) {
 
 app.get("/urls/new", (req, res) => {
   let cookie = req.cookies;
-  let templateVars = {
-    user: users[cookie.user_id],
-    urls: urlDatabase
-  };
-  res.render("urls_new", templateVars);
-});
-
+  if (cookie.user_id) {
+    res.render("urls_new", {user: users[cookie.user_id]});
+  } else {
+    res.redirect("/login");
+  }
+})
 app.get("/register", (req, res) => {
   let cookie = req.cookies;
   let templateVars = {
     user: users[cookie.user_id],
-    urls: urlDatabase
+    urls: userVerification(urlDatabase, cookie.user_id)
   };
   res.render("register", templateVars);
 });
@@ -103,7 +114,12 @@ app.get("/login", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const generatedshortURL = generateRandomString();
-  urlDatabase[generatedshortURL] = req.body.longURL;
+  let cookie = req.cookies;
+  urlDatabase[generatedshortURL] = {
+    longURL: req.body.longURL,
+    userID: cookie.user_id
+  };
+  console.log(urlDatabase);
   res.redirect(`/urls/${generatedshortURL}`);
 });
 
@@ -145,23 +161,40 @@ app.post("/register", function (req, res) {
 
 
 app.post("/urls/:shortURL/edit", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
-  res.redirect("/urls");
+  let cookie = req.cookies;
+  let shortURL = req.params.shortURL;
+  let usersObj = userVerification(urlDatabase, cookie.user_id);
+  if (usersObj[shortURL]) {
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL, 
+      userID: cookie.user_id
+    };
+    res.redirect("/urls");
+  } else {
+    res.status(403).send("Please log in to have access to the feature");
+  }
 })
-
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
-});
+  let short = req.params.shortURL;
+  let cookie = req.cookies;
+  let userLinks = userVerification(urlDatabase, cookie.user_id);
+  if (userLinks[short]) {
+    delete urlDatabase[short];
+    res.redirect("/urls");
+  } else {
+    res.send("You are not authorized to delete this link.");
+  }
+})
+
 
 app.get("/u/:shortURL", function(req, res) {
   let shortURL = req.params.shortURL;
-  res.redirect(urlDatabase[shortURL]);
+  res.redirect(urlDatabase[shortURL].longURL);
 })
 
 
