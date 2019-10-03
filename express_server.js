@@ -47,12 +47,6 @@ app.get("/", (req, res) => {
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-/*
-app.get("/hello", (req, res) => {
-  let templateVars = { greeting: 'Hello World!' };
-  res.render("hello_world", templateVars);
-});
-*/
 
 app.get("/urls", function(req, res) {
   let cookie = req.session;
@@ -87,7 +81,8 @@ app.get("/login", (req, res) => {
 
 app.get("/u/:shortURL", function(req, res) {
   let shortURL = req.params.shortURL;
-  let cookie = req.session;
+  console.log("first " + shortURL);
+  console.log("second : " + urlDatabase[shortURL].longURL);
   res.redirect(urlDatabase[shortURL].longURL);
 });
 

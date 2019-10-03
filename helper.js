@@ -17,7 +17,7 @@ function verifyEmail(email, users) {
     }
   }
   return undefined;
-};
+}
 
 function verifyPassword(email, password) {
   for (let user in users) {
@@ -25,17 +25,17 @@ function verifyPassword(email, password) {
       return bcrypt.compareSync(password, users[user].password);
     }
   }
-};
+}
 
 function userVerification(object, id) {
   let returned = {};
   for (let obj in object) {
-    if (object[obj].userID == id) {
+    if (object[obj].userID === id) {
       returned[obj] = object[obj];
     }
   }
   return returned;
-};
+}
 
 module.exports = {
   generateRandomString,
