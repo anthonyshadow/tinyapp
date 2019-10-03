@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 const cookieSession = require("cookie-session");
 const saltRounds = 10;
+const {generateRandomString, verifyEmail, verifyPassword, userVerification} = require("./helper");
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -18,42 +19,6 @@ app.use(cookieSession({
 
 
 app.set("view engine", "ejs");
-
-const generateRandomString = function() {
-  let input = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let randomString = '';
-  for (let i = 0; i < 6; i++) {
-    randomString += input[Math.floor(Math.random() * input.length)];
-  }
-  return randomString;
-};
-
-function verifyEmail(email) {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user].id;
-    }
-  }
-  return false;
-}
-
-function verifyPassword(email, password) {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return bcrypt.compareSync(password, users[user].password);
-    }
-  }
-}
-
-function userVerification(object, id) {
-  let returned = {};
-  for (let obj in object) {
-    if (object[obj].userID == id) {
-      returned[obj] = object[obj];
-    }
-  }
-  return returned;
-}
 
 
 const urlDatabase = {
@@ -122,8 +87,10 @@ app.get("/login", (req, res) => {
 
 app.get("/u/:shortURL", function(req, res) {
   let shortURL = req.params.shortURL;
+  let cookie = req.session;
   res.redirect(urlDatabase[shortURL].longURL);
 });
+
 
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -149,7 +116,7 @@ app.post("/urls", (req, res) => {
 
 app.post("/login", function(req, res) {
   console.log(req.cookies);
-  let userID = verifyEmail(req.body.email);
+  let userID = verifyEmail(req.body.email, users);
   let password = verifyPassword(req.body.email, req.body.password);
   console.log(userID, password);
   if (userID && password) {
