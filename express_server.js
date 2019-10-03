@@ -116,7 +116,6 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: cookie.user_id
   };
-  console.log(urlDatabase);
   res.redirect(`/urls/${generatedshortURL}`);
 });
 
