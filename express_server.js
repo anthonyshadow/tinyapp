@@ -143,7 +143,7 @@ app.post("/login", function(req, res) {
 app.post("/logout", function(req, res) {
   console.log(req.cookies);
   req.session = null;
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // Creating/Registering a new user
