@@ -10,22 +10,23 @@ const generateRandomString = function() {
   return randomString;
 };
 
-function verifyEmail(email, users) {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user].id;
+function verifyEmail(email, database) {
+  for (let user in database) {
+    if (database[user].email == email) {
+      return database[user].id;
     }
   }
-  return undefined;
 }
 
-function verifyPassword(email, password) {
+function verifyPassword(email, password, users) {
   for (let user in users) {
     if (users[user].email === email) {
       return bcrypt.compareSync(password, users[user].password);
     }
   }
-}
+  return false;
+  }
+
 
 function userVerification(object, id) {
   let returned = {};

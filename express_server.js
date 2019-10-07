@@ -41,7 +41,7 @@ const users = {
 //Default Homepage
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -119,20 +119,24 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${generatedshortURL}`);
 });
 
-// Login
+// Login page and process
 
 app.post("/login", function(req, res) {
-  console.log(req.cookies);
-  let userID = verifyEmail(req.body.email, users);
-  let password = verifyPassword(req.body.email, req.body.password);
-  console.log(userID, password);
-  if (userID && password) {
-    req.session.user_id = userID;
-    res.redirect("/urls");
+
+  let loginemail = req.body.email;
+  let loginpassword = req.body.password;
+  let user = verifyEmail(loginemail, users);
+  let passwordCheck = verifyPassword(loginemail, loginpassword, users);
+
+  if (user && passwordCheck) {
+    req.session.user_id = user;
   } else {
-    res.status(403).send(`Error 403 - Email/ Password entered is not valid!`);
+    res.render("error", {ErrorStatus: 403, ErrorMessage: "The Email or Password entered is not valid!"});
   }
+  res.redirect("/urls");
 });
+
+
 
 // Logout
 
@@ -145,10 +149,10 @@ app.post("/logout", function(req, res) {
 // Creating/Registering a new user
 
 app.post("/register", function(req, res) {
-  if (verifyEmail(req.body.email)) {
-    res.status(400).send(`Error 400 - That email is already in use!`);
-  } else if (req.body.email === "" || req.body.password === "") {
-    res.status(400).send(`Error 400 - Email or password needs to be entered!`);
+  if (req.body.email === "" || req.body.password === "") {
+    res.render("error", {ErrorStatus: 400, ErrorMessage: "Please fill out all the forms"}); 
+  } else if (verifyEmail(req.body.email, users)) {
+    res.render("error", {ErrorStatus: 400, ErrorMessage: "That email is already in use!"});
   } else {
     let userID = generateRandomString();
     req.session.user_id = userID;
@@ -158,9 +162,11 @@ app.post("/register", function(req, res) {
       password: bcrypt.hashSync(req.body.password, saltRounds)
     };
   }
-  console.log(users);
+  console.log(users)
   res.redirect("/urls");
 });
+
+
 
 // ability to edit short URL
 
